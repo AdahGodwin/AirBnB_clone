@@ -1,50 +1,53 @@
 #!/usr/bin/python3
-""" Class BaseModel """
+''' module for BaseModel class '''
 from datetime import datetime
-from uuid import uuid4
+import uuid
 import models
 
 
 class BaseModel:
-    """ Construct """
-
+    ''' BaseModel class '''
     def __init__(self, *args, **kwargs):
-        """ Construct """
-        if kwargs:
-            for key, value in kwargs.items():
-                if key == '__class__':
-                    continue
-                elif key == 'updated_at':
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                elif key == 'created_at':
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                if 'id' not in kwargs.keys():
-                    self.id = str(uuid4())
-                if 'created_at' not in kwargs.keys():
-                    self.created_at = datetime.now()
-                if 'updated_at' not in kwargs.keys():
-                    self.updated_at = datetime.now()
-                setattr(self, key, value)
+        '''
+        initation of basemodel
+
+        Args:
+        *args: arguments passed in
+        **kwargs: arguments with key values
+
+        Return:
+        None
+        '''
+        if len(kwargs) != 0:
+            self.__dict__ = kwargs
+            self.created_at = datetime.strptime(self.created_at,
+                                                "%Y-%m-%dT%H:%M:%S.%f")
+            self.updated_at = datetime.strptime(self.updated_at,
+                                                "%Y-%m-%dT%H:%M:%S.%f")
         else:
-            self.id = str(uuid4())
+            self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
-            self.updated_at = self.created_at
+            self.updated_at = datetime.now()
             models.storage.new(self)
 
     def __str__(self):
-        """ String """
-        return '[' + type(self).__name__ + '] (' + str(self.id) + \
-               ') ' + str(self.__dict__)
+        '''
+        Return:
+        string represntation fo object
+        '''
+        return '[{}] ({}) {}'.format(self.__class__.__name__,
+                                     self.id, self.__dict__)
 
     def save(self):
-        """ Save function """
+        ''' updates date for updated_at attribute '''
         self.updated_at = datetime.now()
         models.storage.save()
 
     def to_dict(self):
-        """ Return a dictionary """
-        aux_dict = self.__dict__.copy()
-        aux_dict['__class__'] = self.__class__.__name__
-        aux_dict['created_at'] = self.created_at.isoformat()
-        aux_dict['updated_at'] = self.updated_at.isoformat()
-        return aux_dict
+        ''' returns dictonary with all key values of instance '''
+        mydict = self.__dict__.copy()
+        mydict['__class__'] = self.__class__.__name__
+        mydict['created_at'] = self.created_at.isoformat()
+        mydict['updated_at'] = self.updated_at.isoformat()
+
+        return mydict
